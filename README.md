@@ -2,7 +2,7 @@
 
 Visit the website: [beenfoss.netlify.app](https://beenfoss.netlify.app)
 
-![Banner](docs/banner.png)
+![Screenshot](docs/banner.png)
 
 Free open source alternative to ad and trackers cluttered "been". It's also much nicer ;)
 
