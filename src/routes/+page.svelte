@@ -38,7 +38,7 @@
 	<title>been-foss</title>
 	<meta
 		name="description"
-		content="A free and open-source alternative to ad and trackers cluttered been.to, a website for tracking countries you have visited."
+		content="A free and open-source alternative to ad and trackers cluttered been, a website for tracking countries you have visited."
 	/>
 </svelte:head>
 <aside
