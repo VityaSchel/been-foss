@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte'
-	import { geoMercator, geoPath, type ExtendedFeature } from 'd3-geo'
+	import { geoMercator, geoPath } from 'd3-geo'
 	import CountryPath from '$lib/CountryPath.svelte'
 	import {
 		createSingleton,
@@ -10,38 +10,24 @@
 	} from 'tippy.js'
 	import { select } from 'd3-selection'
 	import { zoom } from 'd3-zoom'
+	import type { Country } from '$lib/countries'
 
-	type Country = { id: string; name: string; feature: ExtendedFeature }
+	let {
+		countries,
+		visited = $bindable()
+	}: {
+		countries: Country[]
+		visited: Country['id'][]
+	} = $props()
 
-	let countries: Country[] = $state([])
-	let visited: Country['id'][] = $state([])
 	let tippyInstances: Record<string, Instance> = $state({})
 
 	let width = $state(1)
 	let height = $state(1)
 
-	const fetchData = async () => {
-		const data = await fetch('/countries.geojson').then((res) => res.json())
-		const features = data.features as ExtendedFeature[]
-		countries = features
-			.map((feature) => ({
-				id: feature.properties?.iso_a3 as string,
-				name: feature.properties?.name as string,
-				feature
-			}))
-			.filter((c) => c.id !== '-99')
-	}
-
 	let svgEl: SVGSVGElement
 	let gEl: SVGGElement
 	onMount(() => {
-		fetchData()
-
-		const saved = localStorage.getItem('visitedCountries')
-		if (saved) {
-			visited = JSON.parse(saved) || []
-		}
-
 		const svg = select<SVGSVGElement, unknown>(svgEl)
 		const g = select<SVGGElement, unknown>(gEl)
 		svg.call(
