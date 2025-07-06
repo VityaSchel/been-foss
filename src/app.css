@@ -1,0 +1,9 @@
+@import 'tailwindcss';
+
+html {
+	background-color: black;
+}
+
+:root {
+	color-scheme: dark;
+}

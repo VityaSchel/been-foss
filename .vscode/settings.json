@@ -1,0 +1,38 @@
+{
+	"editor.tabCompletion": "on",
+	"path-intellisense.mappings": {
+		"@/*": "${workspaceFolder}/src/*"
+	},
+	"files.associations": {
+		"tailwind.css": "tailwindcss"
+	},
+	"editor.codeActionsOnSave": {
+		"source.fixAll.eslint": "explicit"
+	},
+	"editor.quickSuggestions": {
+		"strings": "on"
+	},
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+	"[javascript]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[javascriptreact]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[typescript]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[typescriptreact]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[svelte]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"editor.formatOnSave": true,
+	"eslint.validate": ["javascript", "typescript", "svelte"],
+	"search.exclude": {
+		"**/.git": true,
+		"**/node_modules": true
+	},
+	"svg.preview.background": "transparent"
+}
