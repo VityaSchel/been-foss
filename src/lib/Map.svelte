@@ -8,11 +8,13 @@
 		type CreateSingletonInstance,
 		type Instance
 	} from 'tippy.js'
+	import { select } from 'd3-selection'
+	import { zoom } from 'd3-zoom'
 
 	type Country = { id: string; name: string; feature: ExtendedFeature }
 
 	let countries: Country[] = $state([])
-	let visited = $state([])
+	let visited: Country['id'][] = $state([])
 	let tippyInstances: Record<string, Instance> = $state({})
 
 	let width = $state(1)
@@ -30,15 +32,25 @@
 			.filter((c) => c.id !== '-99')
 	}
 
+	let svgEl: SVGSVGElement
+	let gEl: SVGGElement
 	onMount(() => {
 		fetchData()
-	})
 
-	onMount(() => {
 		const saved = localStorage.getItem('visitedCountries')
 		if (saved) {
 			visited = JSON.parse(saved) || []
 		}
+
+		const svg = select<SVGSVGElement, unknown>(svgEl)
+		const g = select<SVGGElement, unknown>(gEl)
+		svg.call(
+			zoom<SVGSVGElement, unknown>()
+				.scaleExtent([0.5, 10])
+				.on('zoom', (event) => {
+					g.attr('transform', event.transform)
+				})
+		)
 	})
 
 	const projection = $derived(
@@ -78,7 +90,7 @@
 
 	let timeout: Timer | null = $state(null)
 
-	let progress = $derived(visited.length / countries.length)
+	let progress = $derived(countries.length && visited.length / countries.length)
 </script>
 
 <svelte:window
@@ -93,45 +105,49 @@
 	}}
 />
 <div class="h-svh w-screen">
-	<div
-		class="fixed top-2 right-2 z-[1] rounded-full bg-neutral-800/20 p-5 text-white backdrop-blur-2xl"
-	>
+	{#if countries.length}
 		<div
-			role="progressbar"
-			aria-valuenow={Math.floor(progress * 100)}
-			aria-valuemin="0"
-			aria-valuemax="100"
-			aria-label="Progress"
-			class="h-1 w-20 overflow-clip rounded-full bg-neutral-500"
+			class="fixed top-2 right-2 z-[1] rounded-full bg-neutral-800/20 p-5 text-white backdrop-blur-2xl"
 		>
-			<div class="h-full bg-lime-500" style="width: {progress * 100}%"></div>
+			<div
+				role="progressbar"
+				aria-valuenow={Math.floor(progress * 100)}
+				aria-valuemin="0"
+				aria-valuemax="100"
+				aria-label="Progress"
+				class="h-1 w-20 overflow-clip rounded-full bg-neutral-500"
+			>
+				<div class="h-full bg-lime-500" style="width: {progress * 100}%"></div>
+			</div>
 		</div>
-	</div>
-	<svg {width} {height} class="h-full w-full">
-		{#each countries as country (country.id)}
-			{@const id = country.id}
-			<CountryPath
-				path={pathGen(country.feature)}
-				name={country.name}
-				bind:visited={
-					() => visited.includes(id),
-					(add) => {
-						if (add) {
-							visited = visited.concat(id)
-						} else {
-							visited = visited.filter((c) => c !== id)
+	{/if}
+	<svg {width} {height} class="h-full w-full" bind:this={svgEl}>
+		<g bind:this={gEl}>
+			{#each countries as country (country.id)}
+				{@const id = country.id}
+				<CountryPath
+					path={pathGen(country.feature)}
+					name={country.name}
+					bind:visited={
+						() => visited.includes(id),
+						(add) => {
+							if (add) {
+								visited = visited.concat(id)
+							} else {
+								visited = visited.filter((c) => c !== id)
+							}
+							localStorage.setItem('visitedCountries', JSON.stringify(Array.from(visited)))
 						}
-						localStorage.setItem('visitedCountries', JSON.stringify(Array.from(visited)))
 					}
-				}
-				bind:tooltip={
-					() => tippyInstances[id],
-					(i) => {
-						tippyInstances[id] = i
-						makeSingleton()
+					bind:tooltip={
+						() => tippyInstances[id],
+						(i) => {
+							tippyInstances[id] = i
+							makeSingleton()
+						}
 					}
-				}
-			/>
-		{/each}
+				/>
+			{/each}
+		</g>
 	</svg>
 </div>
