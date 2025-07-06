@@ -12,7 +12,8 @@
 	import { zoom } from 'd3-zoom'
 	import type { Country } from '$lib/countries'
 	import Progress from '$lib/Progress.svelte'
-	import Spinner from '$lib/Spinner.svelte'
+	import Spinner from '$lib/SpinnerIcon.svelte'
+	import { browser } from '$app/environment'
 
 	let {
 		countries,
@@ -90,7 +91,7 @@
 	}}
 />
 <div
-	class="fixed top-0 right-0 bottom-0 left-85 flex items-center justify-center pr-5 text-center font-sans text-lg tracking-wide"
+	class="fixed top-0 right-0 bottom-0 left-5 md:left-85 flex items-center justify-center pr-5 text-center font-sans text-lg tracking-wide"
 >
 	<div class="w-100 max-w-full">
 		<noscript>
@@ -102,8 +103,8 @@
 <div class="relative h-svh w-screen">
 	{#if countries.length}
 		<Progress countries={countries.length} visited={visited.length} />
-	{:else}
-		<div class="absolute top-0 right-0 bottom-0 left-80">
+	{:else if browser}
+		<div class="absolute top-0 right-0 bottom-0 left-5 md:left-80">
 			<div class="absolute top-1/2 left-1/2">
 				<Spinner />
 			</div>
