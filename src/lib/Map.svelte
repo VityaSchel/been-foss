@@ -11,6 +11,7 @@
 	import { select } from 'd3-selection'
 	import { zoom } from 'd3-zoom'
 	import type { Country } from '$lib/countries'
+	import Progress from '$lib/Progress.svelte'
 
 	let {
 		countries,
@@ -22,22 +23,13 @@
 
 	let tippyInstances: Record<string, Instance> = $state({})
 
+	let resizeTimer: Timer | null = $state(null)
+
 	let width = $state(1)
 	let height = $state(1)
 
 	let svgEl: SVGSVGElement
 	let gEl: SVGGElement
-	onMount(() => {
-		const svg = select<SVGSVGElement, unknown>(svgEl)
-		const g = select<SVGGElement, unknown>(gEl)
-		svg.call(
-			zoom<SVGSVGElement, unknown>()
-				.scaleExtent([0.5, 10])
-				.on('zoom', (event) => {
-					g.attr('transform', event.transform)
-				})
-		)
-	})
 
 	const projection = $derived(
 		geoMercator()
@@ -63,28 +55,34 @@
 		})
 	}
 
+	onMount(() => {
+		width = window.innerWidth
+		height = window.innerHeight
+
+		const svg = select<SVGSVGElement, unknown>(svgEl)
+		const g = select<SVGGElement, unknown>(gEl)
+		svg.call(
+			zoom<SVGSVGElement, unknown>()
+				.scaleExtent([0.5, 10])
+				.on('zoom', (event) => {
+					g.attr('transform', event.transform)
+				})
+		)
+	})
+
 	onDestroy(() => {
 		if (singleton) {
 			singleton.destroy()
 		}
 	})
-
-	onMount(() => {
-		width = window.innerWidth
-		height = window.innerHeight
-	})
-
-	let timeout: Timer | null = $state(null)
-
-	let progress = $derived(countries.length && visited.length / countries.length)
 </script>
 
 <svelte:window
 	onresize={() => {
-		if (timeout) {
-			clearTimeout(timeout)
+		if (resizeTimer) {
+			clearTimeout(resizeTimer)
 		}
-		timeout = setTimeout(() => {
+		resizeTimer = setTimeout(() => {
 			width = window.innerWidth
 			height = window.innerHeight
 		}, 100)
@@ -92,27 +90,14 @@
 />
 <div class="h-svh w-screen">
 	{#if countries.length}
-		<div
-			class="fixed top-2 right-2 z-[1] rounded-full bg-neutral-800/20 p-5 text-white backdrop-blur-2xl"
-		>
-			<div
-				role="progressbar"
-				aria-valuenow={Math.floor(progress * 100)}
-				aria-valuemin="0"
-				aria-valuemax="100"
-				aria-label="Progress"
-				class="h-1 w-20 overflow-clip rounded-full bg-neutral-500"
-			>
-				<div class="h-full bg-lime-500" style="width: {progress * 100}%"></div>
-			</div>
-		</div>
+		<Progress countries={countries.length} visited={visited.length} />
 	{/if}
 	<svg {width} {height} class="h-full w-full" bind:this={svgEl}>
 		<g bind:this={gEl}>
 			{#each countries as country (country.id)}
 				{@const id = country.id}
 				<CountryPath
-					path={pathGen(country.feature)}
+					path={pathGen(country.geometry)}
 					name={country.name}
 					bind:visited={
 						() => visited.includes(id),

@@ -28,6 +28,9 @@
 	"[svelte]": {
 		"editor.defaultFormatter": "esbenp.prettier-vscode"
 	},
+	"[countries.geojson]": {
+		"editor.formatOnSave": false
+	},
 	"editor.formatOnSave": true,
 	"eslint.validate": ["javascript", "typescript", "svelte"],
 	"search.exclude": {

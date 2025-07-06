@@ -2,7 +2,7 @@
 	import Map from '$lib/Map.svelte'
 	import Button from '$lib/Button.svelte'
 	import { onMount } from 'svelte'
-	import type { ExtendedFeature } from 'd3-geo'
+	import type { GeoGeometryObjects } from 'd3-geo'
 	import type { Country } from '$lib/countries'
 	import { fade } from 'svelte/transition'
 	import { toast } from 'svelte-sonner'
@@ -23,12 +23,12 @@
 
 	const fetchData = async () => {
 		const data = await fetch('/countries.geojson').then((res) => res.json())
-		const features = data.features as ExtendedFeature[]
+		const features = data.features as { id: string; n: string; g: GeoGeometryObjects }[]
 		countries = features
-			.map((feature) => ({
-				id: feature.properties?.iso_a3 as string,
-				name: feature.properties?.name as string,
-				feature
+			.map((c) => ({
+				id: c.id,
+				name: c.n,
+				geometry: c.g
 			}))
 			.filter((c) => c.id !== '-99')
 	}

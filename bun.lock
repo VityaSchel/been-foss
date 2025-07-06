@@ -11,6 +11,7 @@
         "d3-zoom": "^3.0.0",
         "svelte-sonner": "^1.0.5",
         "tippy.js": "^6.3.7",
+        "world-geojson": "^3.3.0",
       },
       "devDependencies": {
         "@eslint/compat": "^1.2.5",
@@ -602,6 +603,8 @@
     "which": ["which@2.0.2", "", { "dependencies": { "isexe": "^2.0.0" }, "bin": { "node-which": "./bin/node-which" } }, "sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA=="],
 
     "word-wrap": ["word-wrap@1.2.5", "", {}, "sha512-BN22B5eaMMI9UMtjrGd5g5eCYPpCPDUy0FJXbYsaT5zYxjFOckS53SQDE3pWkVoWpHXVb3BrYcEN4Twa55B5cA=="],
+
+    "world-geojson": ["world-geojson@3.3.0", "", {}, "sha512-6rYbGCZRA4xmECfgPd/NxhG4TFuXOF8eh6KQJnaxiqGTXJY7X8BUklJHDm4PeBiLhqpwP34hkom7F+QP/Y5yyQ=="],
 
     "yallist": ["yallist@5.0.0", "", {}, "sha512-YgvUTfwqyc7UXVMrB+SImsVYSmTS8X/tSrtdNZMImM+n7+QTriRXyXim0mBrTXNeqzVF0KWGgHPeiyViFFrNDw=="],
 
