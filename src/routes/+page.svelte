@@ -42,7 +42,7 @@
 	/>
 </svelte:head>
 <aside
-	class="absolute top-2 bottom-2 left-2 flex w-80 flex-col gap-4 rounded-2xl bg-neutral-800/40 px-6 py-5 text-white backdrop-blur-2xl"
+	class="absolute top-2 bottom-2 left-2 z-[1] flex w-80 flex-col gap-4 rounded-2xl bg-neutral-800/60 px-6 py-5 text-white backdrop-blur-2xl"
 >
 	<header class="flex shrink-0 items-end gap-2 text-sm">
 		<h1 class="text-4xl font-bold">

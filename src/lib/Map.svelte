@@ -12,6 +12,7 @@
 	import { zoom } from 'd3-zoom'
 	import type { Country } from '$lib/countries'
 	import Progress from '$lib/Progress.svelte'
+	import Spinner from '$lib/Spinner.svelte'
 
 	let {
 		countries,
@@ -88,9 +89,25 @@
 		}, 100)
 	}}
 />
-<div class="h-svh w-screen">
+<div
+	class="fixed top-0 right-0 bottom-0 left-85 flex items-center justify-center pr-5 text-center font-sans text-lg tracking-wide"
+>
+	<div class="w-100 max-w-full">
+		<noscript>
+			This app requires JavaScript to be enabled, otherwise how would we store your data
+			client-side? 😘
+		</noscript>
+	</div>
+</div>
+<div class="relative h-svh w-screen">
 	{#if countries.length}
 		<Progress countries={countries.length} visited={visited.length} />
+	{:else}
+		<div class="absolute top-0 right-0 bottom-0 left-80">
+			<div class="absolute top-1/2 left-1/2">
+				<Spinner />
+			</div>
+		</div>
 	{/if}
 	<svg {width} {height} class="h-full w-full" bind:this={svgEl}>
 		<g bind:this={gEl}>
