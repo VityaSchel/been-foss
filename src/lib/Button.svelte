@@ -1,11 +1,12 @@
 <script lang="ts">
 	let {
 		children,
-		destructive
+		destructive,
+		...props
 	}: {
 		children: import('svelte').Snippet
 		destructive?: boolean
-	} = $props()
+	} & import('svelte/elements').SvelteHTMLElements['button'] = $props()
 </script>
 
 <button
@@ -16,6 +17,7 @@
 			'border-[#5e3333]/30 bg-[#4c1010]/40': destructive
 		}
 	]}
+	{...props}
 >
 	{@render children()}
 </button>
