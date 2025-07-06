@@ -1,4 +1,6 @@
-# been-foss
+# [been-foss](https://beenfoss.netlify.app)
+
+Visit the website: [beenfoss.netlify.app](https://beenfoss.netlify.app)
 
 ![Banner](docs/banner.png)
 
