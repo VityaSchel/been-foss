@@ -11,10 +11,7 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"format": "prettier --write .",
-		"lint": "prettier --check . && eslint .",
-		"db:push": "drizzle-kit push",
-		"db:migrate": "drizzle-kit migrate",
-		"db:studio": "drizzle-kit studio"
+		"lint": "prettier --check . && eslint ."
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.2.5",
@@ -22,12 +19,10 @@
 		"@sveltejs/kit": "^2.16.0",
 		"@sveltejs/vite-plugin-svelte": "^5.0.0",
 		"@tailwindcss/vite": "^4.0.0",
-		"@types/better-sqlite3": "^7.6.12",
 		"@types/d3-geo": "^3.1.0",
 		"@types/d3-selection": "^3.0.11",
 		"@types/d3-zoom": "^3.0.8",
 		"@types/node": "^22",
-		"drizzle-kit": "^0.30.2",
 		"eslint": "^9.18.0",
 		"eslint-config-prettier": "^10.0.1",
 		"eslint-plugin-svelte": "^3.0.0",
@@ -43,13 +38,11 @@
 		"vite": "^6.2.6"
 	},
 	"dependencies": {
-		"@sveltejs/adapter-node": "^5.2.12",
-		"better-sqlite3": "^11.8.0",
+		"@sveltejs/adapter-static": "^3.0.8",
 		"copy-to-clipboard": "^3.3.3",
 		"d3-geo": "^3.1.1",
 		"d3-selection": "^3.0.0",
 		"d3-zoom": "^3.0.0",
-		"drizzle-orm": "^0.40.0",
 		"svelte-sonner": "^1.0.5",
 		"tippy.js": "^6.3.7"
 	}
