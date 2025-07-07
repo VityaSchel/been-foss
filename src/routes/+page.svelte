@@ -2,10 +2,10 @@
 	import Map from '$lib/Map.svelte'
 	import { onMount } from 'svelte'
 	import type { GeoGeometryObjects } from 'd3-geo'
-	import type { Country } from '$lib/countries'
+	import type { Country, CountriesMap } from '$lib/countries'
 	import Sidebar from '$lib/Sidebar.svelte'
 
-	let countries: Country[] = $state([])
+	let countries: CountriesMap | null = $state(null)
 	let visited: Country['id'][] = $state([])
 
 	onMount(() => {
@@ -18,15 +18,32 @@
 	})
 
 	const fetchData = async () => {
-		const data = await fetch('/countries.geojson').then((res) => res.json())
-		const features = data.features as { id: string; n: string; g: GeoGeometryObjects }[]
-		countries = features
-			.map((c) => ({
-				id: c.id,
-				name: c.n,
-				geometry: c.g
+		type Response = {
+			type: 'FeatureCollection'
+			features: {
+				id: string
+				n: string
+				g: GeoGeometryObjects
+			}[]
+		}
+
+		const map = (features: Response['features']) => {
+			return features.map((f) => ({
+				id: f.id,
+				name: f.n,
+				geometry: f.g
 			}))
-			.filter((c) => c.id !== '-99')
+		}
+		
+		const [zoom1x, zoom2x] = await Promise.all([
+			fetch('/countries/1x.geojson')
+				.then((res) => res.json() as Promise<Response>)
+				.then((res) => map(res.features)),
+			fetch('/countries/2x.geojson')
+				.then((res) => res.json() as Promise<Response>)
+				.then((res) => map(res.features))
+		])
+		countries = { zoom1x, zoom2x }
 	}
 </script>
 

@@ -44,7 +44,6 @@
 		"d3-selection": "^3.0.0",
 		"d3-zoom": "^3.0.0",
 		"svelte-sonner": "^1.0.5",
-		"tippy.js": "^6.3.7",
-		"world-geojson": "^3.3.0"
+		"tippy.js": "^6.3.7"
 	}
 }

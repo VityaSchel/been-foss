@@ -10,7 +10,7 @@
 	} from 'tippy.js'
 	import { select } from 'd3-selection'
 	import { zoom } from 'd3-zoom'
-	import type { Country } from '$lib/countries'
+	import type { CountriesMap, Country } from '$lib/countries'
 	import Progress from '$lib/Progress.svelte'
 	import Spinner from '$lib/SpinnerIcon.svelte'
 	import { browser } from '$app/environment'
@@ -19,11 +19,12 @@
 		countries,
 		visited = $bindable()
 	}: {
-		countries: Country[]
+		countries: CountriesMap | null
 		visited: Country['id'][]
 	} = $props()
 
-	let tippyInstances: Record<string, Instance> = $state({})
+	let tippyInstances1x: Record<string, Instance> = $state({})
+	let tippyInstances2x: Record<string, Instance> = $state({})
 
 	let resizeTimer: Timer | null = $state(null)
 
@@ -31,7 +32,8 @@
 	let height = $state(1)
 
 	let svgEl: SVGSVGElement
-	let gEl: SVGGElement
+	let zoom1xEl: SVGGElement
+	let zoom2xEl: SVGGElement
 
 	const projection = $derived(
 		geoMercator()
@@ -41,20 +43,27 @@
 
 	const pathGen = $derived(geoPath(projection))
 
-	let singleton: CreateSingletonInstance | null = $state(null)
-	const makeSingleton = () => {
-		if (singleton) {
-			singleton.destroy()
+	let singletons: {
+		zoom1x: CreateSingletonInstance | null
+		zoom2x: CreateSingletonInstance | null
+	} = $state({ zoom1x: null, zoom2x: null })
+	const makeSingleton = (zoom: '1x' | '2x') => {
+		const existingSingleton = zoom === '1x' ? singletons.zoom1x : singletons.zoom2x
+		if (existingSingleton !== null) {
+			existingSingleton.destroy()
 		}
-		singleton = createSingleton(Object.values(tippyInstances), {
-			followCursor: true,
-			plugins: [followCursor],
-			duration: 0,
-			inertia: true,
-			interactive: false,
-			trigger: 'mouseenter focus',
-			hideOnClick: false
-		})
+		singletons[zoom === '1x' ? 'zoom1x' : 'zoom2x'] = createSingleton(
+			Object.values(zoom === '1x' ? tippyInstances1x : tippyInstances2x),
+			{
+				followCursor: true,
+				plugins: [followCursor],
+				duration: 0,
+				inertia: true,
+				interactive: false,
+				trigger: 'mouseenter focus',
+				hideOnClick: false
+			}
+		)
 	}
 
 	onMount(() => {
@@ -62,21 +71,37 @@
 		height = window.innerHeight
 
 		const svg = select<SVGSVGElement, unknown>(svgEl)
-		const g = select<SVGGElement, unknown>(gEl)
+		const zoom1xGroup = select<SVGGElement, unknown>(zoom1xEl)
+		const zoom2xGroup = select<SVGGElement, unknown>(zoom2xEl)
 		svg.call(
 			zoom<SVGSVGElement, unknown>()
 				.scaleExtent([0.5, 10])
 				.on('zoom', (event) => {
-					g.attr('transform', event.transform)
+					if (event.transform.k < 3) {
+						zoom1xGroup.style('display', 'block')
+						zoom2xGroup.style('display', 'none')
+					} else {
+						zoom1xGroup.style('display', 'none')
+						zoom2xGroup.style('display', 'block')
+					}
+					zoom1xGroup.attr('transform', event.transform)
+					zoom2xGroup.attr('transform', event.transform)
 				})
 		)
 	})
 
 	onDestroy(() => {
-		if (singleton) {
-			singleton.destroy()
+		if (singletons.zoom1x !== null) {
+			singletons.zoom1x.destroy()
+		}
+		if (singletons.zoom2x !== null) {
+			singletons.zoom2x.destroy()
 		}
 	})
+
+	const saveVisitedCountries = () => {
+		localStorage.setItem('visitedCountries', JSON.stringify(Array.from(visited)))
+	}
 </script>
 
 <svelte:window
@@ -91,7 +116,7 @@
 	}}
 />
 <div
-	class="fixed top-0 right-0 bottom-0 left-5 md:left-85 flex items-center justify-center pr-5 text-center font-sans text-lg tracking-wide"
+	class="fixed top-0 right-0 bottom-0 left-5 flex items-center justify-center pr-5 text-center font-sans text-lg tracking-wide md:left-85"
 >
 	<div class="w-100 max-w-full">
 		<noscript>
@@ -101,8 +126,8 @@
 	</div>
 </div>
 <div class="relative h-svh w-screen">
-	{#if countries.length}
-		<Progress countries={countries.length} visited={visited.length} />
+	{#if countries !== null}
+		<Progress countries={countries.zoom2x.length} visited={visited.length} />
 	{:else if browser}
 		<div class="absolute top-0 right-0 bottom-0 left-5 md:left-80">
 			<div class="absolute top-1/2 left-1/2">
@@ -111,32 +136,55 @@
 		</div>
 	{/if}
 	<svg {width} {height} class="h-full w-full" bind:this={svgEl}>
-		<g bind:this={gEl}>
-			{#each countries as country (country.id)}
-				{@const id = country.id}
-				<CountryPath
-					path={pathGen(country.geometry)}
-					name={country.name}
-					bind:visited={
-						() => visited.includes(id),
-						(add) => {
-							if (add) {
-								visited = visited.concat(id)
-							} else {
-								visited = visited.filter((c) => c !== id)
+		<g bind:this={zoom1xEl}>
+			{#if countries !== null}
+				{#each countries.zoom1x as country (country.id)}
+					{@const id = country.id}
+					<CountryPath
+						path={pathGen(country.geometry)}
+						name={country.name}
+						bind:visited={
+							() => visited.includes(id),
+							(add) => {
+								visited = add ? visited.concat(id) : visited.filter((c) => c !== id)
+								saveVisitedCountries()
 							}
-							localStorage.setItem('visitedCountries', JSON.stringify(Array.from(visited)))
 						}
-					}
-					bind:tooltip={
-						() => tippyInstances[id],
-						(i) => {
-							tippyInstances[id] = i
-							makeSingleton()
+						bind:tooltip={
+							() => tippyInstances1x[id],
+							(i) => {
+								tippyInstances1x[id] = i
+								makeSingleton('1x')
+							}
 						}
-					}
-				/>
-			{/each}
+					/>
+				{/each}
+			{/if}
+		</g>
+		<g bind:this={zoom2xEl} style="display: none">
+			{#if countries !== null}
+				{#each countries.zoom2x as country (country.id)}
+					{@const id = country.id}
+					<CountryPath
+						path={pathGen(country.geometry)}
+						name={country.name}
+						bind:visited={
+							() => visited.includes(id),
+							(add) => {
+								visited = add ? visited.concat(id) : visited.filter((c) => c !== id)
+								saveVisitedCountries()
+							}
+						}
+						bind:tooltip={
+							() => tippyInstances2x[id],
+							(i) => {
+								tippyInstances2x[id] = i
+								makeSingleton('2x')
+							}
+						}
+					/>
+				{/each}
+			{/if}
 		</g>
 	</svg>
 </div>

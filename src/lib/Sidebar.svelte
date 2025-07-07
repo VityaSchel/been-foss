@@ -3,7 +3,7 @@
 	import { fade } from 'svelte/transition'
 	import { toast } from 'svelte-sonner'
 	import copy from 'copy-to-clipboard'
-	import type { Country } from '$lib/countries'
+	import type { CountriesMap, Country } from '$lib/countries'
 	import ArrowIcon from '$lib/ArrowIcon.svelte'
 	import { browser } from '$app/environment'
 
@@ -11,7 +11,7 @@
 		countries,
 		visited = $bindable()
 	}: {
-		countries: Country[]
+		countries: CountriesMap | null
 		visited: Country['id'][]
 	} = $props()
 
@@ -65,51 +65,54 @@
 		placeholder="Search countries..."
 		class="rounded-full border border-neutral-600/40 bg-neutral-700/20 px-4 py-2 text-sm -outline-offset-[1px] outline-transparent transition-colors duration-200 focus:outline-[1px] focus:outline-[#ffb800]"
 		bind:value={filter}
-		disabled={!countries.length}
+		disabled={countries === null}
 		autocomplete="off"
 	/>
 	<nav
 		class="flex flex-1 flex-col overflow-y-auto mask-y-from-[calc(100%-20px)] mask-y-to-100% py-[10px]"
 	>
-		{#each countries
-			.toSorted((a, b) => a.name.localeCompare(b.name))
-			.filter((c) => c.name
-					.toLowerCase()
-					.includes(filter.toLowerCase())) as country, i (country.id)}
-			{@const id = country.id}
-			<div class="flex items-center gap-2" in:fade={{ delay: i * 1, duration: 100 }}>
-				<input
-					type="checkbox"
-					id="country-{id}"
-					bind:checked={
-						() => visited.includes(id),
-						(add) => {
-							if (add) {
-								visited = visited.concat(id)
-							} else {
-								visited = visited.filter((c) => c !== id)
+		{#if countries !== null}
+			{#each countries.zoom2x
+				.toSorted((a, b) => a.name.localeCompare(b.name))
+				.filter((c) => c.name
+						.toLowerCase()
+						.includes(filter.toLowerCase())) as country, i (country.id)}
+				{@const id = country.id}
+				<div class="flex items-center gap-2" in:fade={{ delay: i * 1, duration: 100 }}>
+					<input
+						type="checkbox"
+						id="country-{id}"
+						bind:checked={
+							() => visited.includes(id),
+							(add) => {
+								if (add) {
+									visited = visited.concat(id)
+								} else {
+									visited = visited.filter((c) => c !== id)
+								}
+								localStorage.setItem('visitedCountries', JSON.stringify(Array.from(visited)))
 							}
-							localStorage.setItem('visitedCountries', JSON.stringify(Array.from(visited)))
 						}
-					}
-				/>
-				<label
-					for="country-{id}"
-					class="flex-1 py-[1px] text-lg font-medium tracking-wide select-none"
-					>{country.name}</label
-				>
-			</div>
-		{/each}
+					/>
+					<label
+						for="country-{id}"
+						class="flex-1 py-[1px] text-lg font-medium tracking-wide select-none"
+						>{country.name}</label
+					>
+				</div>
+			{/each}
+		{/if}
 	</nav>
 	<footer class="flex shrink-0 items-center gap-2">
 		<Button
 			onclick={() => {
 				navigator.clipboard
-					.readText()
-					.then((text) => {
+				.readText()
+				.then((text) => {
+						if (countries === null) return
 						const importedIds = text.trim().split(/ +/)
 						const validIds = importedIds.filter((c) =>
-							countries.some((country) => country.id === c)
+							countries.zoom2x.some((country) => country.id === c)
 						)
 						if (validIds.length === 0) {
 							toast.error('Data invalid', {
